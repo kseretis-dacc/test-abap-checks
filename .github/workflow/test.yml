@@ -1,0 +1,23 @@
+name: test
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Stuff
+      run: |
+        brew install oras
+        oras version
+        echo ${{ github.token }} | oras login ghcr.io -u ${{ github.actor }} --password-stdin
+        REPOSITORY=$(echo ${{ github.repository }} | tr '[A-Z]' '[a-z]')
+        oras push ghcr.io/$REPOSITORY/${{ github.event.repository.name }}:latest --manifest-config /dev/null:application/vnd.abapgit.abap ./src/:application/vnd.abapgit.abap+tar
+#        oras pull ghcr.io/${{ github.repository }}/${{ github.event.repository.name }}:latest
